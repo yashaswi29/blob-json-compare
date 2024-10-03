@@ -162,7 +162,6 @@ def main():
     count_lines_twice(os.path.join(output_dir, missed_output_file))
     count_lines_twice(os.path.join(output_dir, json_only_output_file))
 
-    # Final verification
     verify_counts(updated_blob_files, json_src_values, common_paths, missed_paths, json_only_paths)
 
 if __name__ == "__main__":
