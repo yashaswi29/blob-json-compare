@@ -30,20 +30,13 @@ def update_blob_paths(blob_paths):
         updated_paths.append(updated_path)
     return updated_paths
 
-def retrieve_image_video_files_from_blob_storage(container_name, video_prefix, image_prefix):
-    """Find all .png and .mp4 file paths from Azure Blob Storage."""
+def retrieve_image_files_from_blob_storage(container_name, image_prefix):
+    """Find all .png file paths from Azure Blob Storage."""
     connection_string = os.getenv("AZURE_CONNECTION_STRING")
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     container_client = blob_service_client.get_container_client(container_name)
 
     blob_paths = []
-    
-    # Retrieve video files
-    video_blobs = container_client.list_blobs(name_starts_with=video_prefix)
-    for blob in video_blobs:
-        if blob.name.endswith('.mp4'):
-            blob_path = f"/{blob.name}" if not blob.name.startswith('/') else blob.name
-            blob_paths.append(blob_path.strip())
     
     # Retrieve image files
     image_blobs = container_client.list_blobs(name_starts_with=image_prefix)
@@ -119,7 +112,6 @@ def verify_counts(blob_files, json_src_values, common_paths, missed_paths, json_
 def main():
     # Container and blob configurations from environment variables
     assets_container = os.getenv("BLOB_CONTAINER_ASSETS")
-    video_prefix = os.getenv("BLOB_VIDEO_PREFIX")
     image_prefix = os.getenv("BLOB_IMAGES_PREFIX")
     json_container = os.getenv("BLOB_CONTAINER_JSON")
     json_blob_path = os.getenv("JSON_BLOB_PATH")
@@ -130,8 +122,8 @@ def main():
     missed_output_file = "missed_path_src.txt"
     json_only_output_file = "json_only_path_src.txt"
 
-    # Retrieve Blob files (assets) and save to blob_src.txt
-    blob_files = retrieve_image_video_files_from_blob_storage(assets_container, video_prefix, image_prefix)
+    # Retrieve Blob files (images) and save to blob_src.txt
+    blob_files = retrieve_image_files_from_blob_storage(assets_container, image_prefix)
     updated_blob_files = update_blob_paths(blob_files)  # Update blob paths
     save_paths_to_file(output_dir, blob_output_file, updated_blob_files)  # Save updated paths
 
@@ -172,7 +164,6 @@ def main():
 
     # Final verification
     verify_counts(updated_blob_files, json_src_values, common_paths, missed_paths, json_only_paths)
-
 
 if __name__ == "__main__":
     main()
