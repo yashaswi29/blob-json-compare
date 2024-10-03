@@ -24,6 +24,18 @@ def delete_directory(path):
 
     delete_blob_directory(container_client, path)
 
+def list_blobs_in_container(container_name):
+    connection_string = os.getenv("AZURE_CONNECTION_STRING")
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+    
+    blobs = container_client.list_blobs()
+    for blob in blobs:
+        print(blob.name)
+
+list_blobs_in_container("localcontent")
+
+
 if __name__ == "__main__":
     paths_to_delete = [ 
     # provide a list of directory paths or followed by ' , ' [comma]
