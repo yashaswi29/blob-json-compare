@@ -11,10 +11,9 @@ output_dir = os.getenv("OUTPUT_DIR", "draft5")
 os.makedirs(output_dir, exist_ok=True)
 
 def save_paths_to_file(directory, file_name, paths):
-    """Save the paths to a file."""
     os.makedirs(directory, exist_ok=True)  
     full_path = os.path.join(directory, file_name)
-    
+             
     with open(full_path, 'w') as file:
         for path in paths:
             file.write(f"{path}\n")
