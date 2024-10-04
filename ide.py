@@ -1,67 +1,57 @@
-import os
 import json
+import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-# Get the JSON file path from the environment variable
+# File paths from .env
 json_file_path = os.getenv('JSON_FILE_PATH')
 
-def validate_icon_paths_recursive(data, line_numbers, current_line, parent_key=""):
-
-    results = []
-    
-    if isinstance(data, dict):
-        if all(key in data for key in ["id", "version", "icon", "description"]):
-            # Extract section type from parent_key (e.g., actionCards, modules)
-            section_type = parent_key.rstrip('s').lower()  # Remove 's' if plural
-
-            # Check if icon path starts with the section name
-            icon_path = data.get("icon", "")
-            expected_prefix = f"/icon/{section_type}"
-            if icon_path.startswith(expected_prefix):
-                # Store the result if the icon path is valid
-                result = {
-                    "id": data["id"],
-                    "icon": icon_path,
-                    "type": section_type,
-                    "line": current_line
-                }
-                results.append(result)
-
-        # Recursively go deeper into nested structures
-        for key, value in data.items():
-            nested_results = validate_icon_paths_recursive(value, line_numbers, line_numbers.get(key, current_line), key)
-            results.extend(nested_results)
-
-    elif isinstance(data, list):
-        for i, item in enumerate(data):
-            nested_results = validate_icon_paths_recursive(item, line_numbers, line_numbers.get(f"{parent_key}[{i}]", current_line), parent_key)
-            results.extend(nested_results)
-
-    return results
-
-def get_line_numbers(json_file_path):
-    """Helper function to map line numbers to keys in the JSON file."""
-    line_numbers = {}
-    with open(json_file_path, 'r') as f:
+def get_line_numbers(json_file):
+    line_number_dict = {}
+    with open(json_file, 'r') as f:
         for i, line in enumerate(f, 1):
             if ':' in line:
-                key = line.split(':', 1)[0].strip().strip('"')
-                line_numbers[key] = i
-    return line_numbers
+                key = line.split(':')[0].strip().replace('"', '')
+                line_number_dict[key] = i
+    return line_number_dict
 
-# Load line numbers and JSON data
+def validate_icons_in_functions(data, line_numbers, expected_prefix, parent_key=None):
+    if isinstance(data, dict):
+        # Check for functions with id, version, icon, description, and chapters
+        if all(k in data for k in ['id', 'version', 'icon', 'description', 'chapters']):
+            function_id = data['id']
+            function_icon = data['icon']
+            function_desc = data['description']
+            line = line_numbers.get('id', 'Unknown')
+
+            # Validate the icon path
+            if not function_icon.startswith(expected_prefix):
+                print(f"ID: {function_id}, Type: {parent_key}, Invalid Icon Path: {function_icon}, Line: {line}")
+            
+            # Validate chapters consistency
+            for chapter in data.get('chapters', []):
+                if chapter.get('id') != function_id or chapter.get('description') != function_desc:
+                    chapter_id = chapter.get('id')
+                    chapter_desc = chapter.get('description')
+                    print(f"ID: {function_id}, Type: {parent_key}, Mismatch in Chapters - Chapter ID: {chapter_id}, Chapter Description: {chapter_desc}, Line: {line}")
+
+        # Recursively check nested dictionaries or lists
+        for key, value in data.items():
+            if isinstance(value, (dict, list)):
+                validate_icons_in_functions(value, line_numbers, expected_prefix, parent_key=key)
+
+    elif isinstance(data, list):
+        for item in data:
+            validate_icons_in_functions(item, line_numbers, expected_prefix, parent_key)
+
+# Load the JSON file
+with open(json_file_path, 'r') as f:
+    json_data = json.load(f)
+
+# Get the line numbers for all keys
 line_numbers = get_line_numbers(json_file_path)
 
-# Load the JSON file using the path from .env
-with open(json_file_path, 'r') as file:
-    data = json.load(file)
-
-# Call the function and get the results
-icon_check_results = validate_icon_paths_recursive(data, line_numbers, 1)
-
-# Print the simplified output
-for result in icon_check_results:
-    print(f"ID: {result['id']}, Type: {result['type']}, Icon: {result['icon']}, Line: {result['line']}")
+# Validate icons in the 'procedures' section (or any function)
+validate_icons_in_functions(json_data, line_numbers, '/icon/procedures/', parent_key='procedures')

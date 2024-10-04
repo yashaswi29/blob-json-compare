@@ -1,0 +1,42 @@
+"Write a Python script to process a JSON file that contains multiple sections like procedures, actioncards, and modules. For each section, the script should identify entries with the following fields: id, version, icon, description, and chapters.
+
+The script should:
+
+    Validate that the icon path matches the section it belongs to (e.g., if in procedures, the icon path must start with /icon/procedures/).
+    Verify that the id and description in each entry’s chapters are consistent with the parent id and description.
+    Print out each validation result, indicating mismatched paths or chapter inconsistencies, including the line number in the JSON file where the issue occurs.
+
+For example:
+
+    If an entry in the procedures section has an icon with an incorrect path like /icon/actioncard/..., flag it as an invalid icon path.
+    If the chapters under a procedure have a different id or description, flag the mismatch.
+
+The output should include the id, the type (e.g., procedures), the issue found, and the line number from the JSON file. The file paths and other configurations should be handled via environment variables."
+
+
+I understand now that you'd like to focus on a few key requirements:
+
+    Check Icons in Specific Functions (e.g., Procedures):
+        When a function such as procedures contains an id, version, icon, description, and chapters, the icon path should be correctly related to that function (e.g., /icon/procedures/...).
+        If it's under the procedures section, the icon path should not reference other categories like actioncard.
+
+    Verify Matching IDs, Descriptions, and Chapters:
+        For each entry, the id, description, and chapters (if present) must match. The chapters within each function should also have consistent id and description values.
+
+Task Breakdown
+
+You want a Python script to:
+
+    Identify specific functions (like procedures) based on a structure with id, version, icon, description, and chapters.
+    Validate that the icon path is correct (e.g., for procedures, it should not have /icon/actioncard paths).
+    Ensure consistency between id, description, and chapters within the function.
+
+Approach
+
+Here's how we can adjust the logic to achieve this:
+
+    Icon Validation:
+        When inside a function like procedures, the script will check whether the icon path follows a consistent prefix, such as /icon/procedures/. If the path references a different category like actioncard, it will flag it as an issue.
+
+    Chapter Consistency:
+        For each procedure, the id and description within chapters should match the parent id and description. If there's a mismatch, it will be reported.
