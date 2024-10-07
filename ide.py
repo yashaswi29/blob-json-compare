@@ -1,57 +1,78 @@
-import json
 import os
+import json
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
-# File paths from .env
-json_file_path = os.getenv('JSON_FILE_PATH')
+JSON_FILE_PATH = os.getenv('JSON_FILE_PATH', 'path/to/your/json_file.json')
 
-def get_line_numbers(json_file):
-    line_number_dict = {}
-    with open(json_file, 'r') as f:
-        for i, line in enumerate(f, 1):
-            if ':' in line:
-                key = line.split(':')[0].strip().replace('"', '')
-                line_number_dict[key] = i
-    return line_number_dict
+def load_json_file(json_file_path):
+    """Load JSON data from a file with line numbers."""
+    try:
+        with open(json_file_path, 'r') as file:
+            data = file.readlines()
+            json_data = json.loads(''.join(data))
+            return json_data, data
+    except FileNotFoundError:
+        print("JSON file not found.")
+        return {}, []
+    except json.JSONDecodeError:
+        print("Error decoding JSON.")
+        return {}, []
 
-def validate_icons_in_functions(data, line_numbers, expected_prefix, parent_key=None):
-    if isinstance(data, dict):
-        # Check for functions with id, version, icon, description, and chapters
-        if all(k in data for k in ['id', 'version', 'icon', 'description', 'chapters']):
-            function_id = data['id']
-            function_icon = data['icon']
-            function_desc = data['description']
-            line = line_numbers.get('id', 'Unknown')
+def find_line_number(json_lines, search_str):
+    """Find the line number of the given string in the JSON file."""
+    for index, line in enumerate(json_lines, start=1):
+        if search_str in line:
+            return index
+    return None
 
-            # Validate the icon path
-            if not function_icon.startswith(expected_prefix):
-                print(f"ID: {function_id}, Type: {parent_key}, Invalid Icon Path: {function_icon}, Line: {line}")
-            
-            # Validate chapters consistency
-            for chapter in data.get('chapters', []):
-                if chapter.get('id') != function_id or chapter.get('description') != function_desc:
-                    chapter_id = chapter.get('id')
-                    chapter_desc = chapter.get('description')
-                    print(f"ID: {function_id}, Type: {parent_key}, Mismatch in Chapters - Chapter ID: {chapter_id}, Chapter Description: {chapter_desc}, Line: {line}")
+def check_icon_paths(json_data, json_lines, parent_key):
+    """Recursively check the 'icon' paths and return line numbers with errors."""
+    errors = []
+    
+    if isinstance(json_data, dict):
+        for key, value in json_data.items():
+            if key == 'icon' and isinstance(value, str):
+                if not value.startswith('/'):  # Assuming valid paths must start with '/'
+                    line_number = find_line_number(json_lines, f'"{key}": "{value}"')
+                    errors.append((line_number, parent_key, value))
+            elif isinstance(value, (dict, list)):
+                errors.extend(check_icon_paths(value, json_lines, parent_key))
+    elif isinstance(json_data, list):
+        for idx, item in enumerate(json_data):
+            errors.extend(check_icon_paths(item, json_lines, f"{parent_key}[{idx}]"))
 
-        # Recursively check nested dictionaries or lists
-        for key, value in data.items():
-            if isinstance(value, (dict, list)):
-                validate_icons_in_functions(value, line_numbers, expected_prefix, parent_key=key)
+    return errors
 
-    elif isinstance(data, list):
-        for item in data:
-            validate_icons_in_functions(item, line_numbers, expected_prefix, parent_key)
+def validate_json_icons(json_data, json_lines):
+    """Validate the 'icon' paths for specific objects."""
+    fields_to_check = ['procedures', 'actioncards', 'modules', 'drugs', 'onboarding', 
+                       'keylearningpoints', 'certificates']
+    
+    errors = []
+    
+    for field in fields_to_check:
+        if field in json_data:
+            errors.extend(check_icon_paths(json_data[field], json_lines, field))
 
-# Load the JSON file
-with open(json_file_path, 'r') as f:
-    json_data = json.load(f)
+    return errors
 
-# Get the line numbers for all keys
-line_numbers = get_line_numbers(json_file_path)
+def main():
+    # Load the JSON file
+    json_data, json_lines = load_json_file(JSON_FILE_PATH)
+    
+    # Validate the JSON data for icon path errors
+    errors = validate_json_icons(json_data, json_lines)
+    
+    if errors:
+        print(f"Found {len(errors)} icon path errors:")
+        for error in errors:
+            line_number, field, icon_value = error
+            print(f"Line {line_number}: Error in '{field}' -> Invalid icon path: {icon_value}")
+    else:
+        print("No errors found in icon paths.")
 
-# Validate icons in the 'procedures' section (or any function)
-validate_icons_in_functions(json_data, line_numbers, '/icon/procedures/', parent_key='procedures')
+if __name__ == "__main__":
+    main()
