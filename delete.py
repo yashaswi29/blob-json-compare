@@ -1,6 +1,4 @@
 # vim .env 
-# AZURE_CONNECTION_STRING=""
-# BLOB_CONTAINER=""
 import os
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from dotenv import load_dotenv
