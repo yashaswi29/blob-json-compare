@@ -1,0 +1,169 @@
+ 
+{
+    "ine-nhxrt-19q": {
+        "description": "India English",
+        "asset_version": "india, india"
+    },    
+    "fre-mczbv-78d": {
+        "description": "India English",
+        "asset_version": "Africa, french"
+    },
+    "hin-pqwrk-23h": {
+        "description": "India English",
+        "asset_version": "india, india"
+    },
+    "a5cf01c8-aee8-1f48-bac8-b887483595ca": {
+        "description": "Afghanistan",
+        "asset_version": "mena, Afghanistan"
+    },
+    "5f06426b-f7f4-ced1-66e3-d8ab3d0881bd": {
+        "description": "Arabic",
+        "asset_version": "mena, mena%20-%20arabic"
+    },
+    "2d9ef8a4-5277-6f3f-7f88-3db2cfb9c610": {
+        "description": "Arabic-MSF",
+        "asset_version": "mena, mena%20-%20arabic"
+    },
+    "7c507a77-f40c-944d-d832-9925cce38b77": {
+        "description": "Bangladesh - Bangla",
+        "asset_version": "india, bangladesh"
+    },
+    "ba2b6912-0bf8-d0ed-5c57-22ba41da24af": {
+        "description": "Benin",
+        "asset_version": "africa, benin"
+    },
+    "130685a4-db88-3933-1026-f4ac14c4a95a": {
+        "description": "Cambodia",
+        "asset_version": "asia, cambodia"
+    },
+    "7cf6efab-a9d7-54d2-2cbd-ec82efe4a7da": {
+        "description": "English",
+        "asset_version": "africa, english%20WHO"
+    },
+    "a5a16d2a-c5c4-c605-f944-1e559dfe7bdf": {
+        "description": "Ethiopia - Afaan Oromo",
+        "asset_version": "africa, ethiopia%20oromiffa"
+    },
+    "f3bb22c9-d64b-26e3-cbf9-e5418e905fb1": {
+        "description": "Ethiopia - Amharic",
+        "asset_version": "africa, ethiopia%20amharic"
+    },
+    "cca954e8-6c14-6924-6990-010cd19c7919": {
+        "description": "Ethiopia - English",
+        "asset_version": "africa, ethiopia%20english"
+    },
+    "67431a5f-a328-a334-3a79-125866630feb": {
+        "description": "Ethiopia - Somali",
+        "asset_version": "africa, ethiopia%20somali"
+    },
+    "6a146956-9f21-206a-98cf-55db7b0a8301": {
+        "description": "French",
+        "asset_version": "africa, french"
+    },
+    "791bb5cb-192d-9a45-a03a-c4a0805caf23": {
+        "description": "Ghana - English",
+        "asset_version": "africa, ghana"
+    },
+    "34167545-4a28-61c7-8f78-af899807d40e": {
+        "description": "India - Bengali",
+        "asset_version": "india, India%20-%20Bengali"
+    },
+    "7ec65d25-3edc-dde4-c066-dfe92c798404": {
+        "description": "India - English",
+        "asset_version": "india, India%20english"
+    },
+    "d43337f5-be53-293d-4dc2-751621a70125": {
+        "description": "India - Gujarati",
+        "asset_version": "india, India%20-%20Gujrati"
+    },
+    "49bc07fa-9ad4-816c-17db-e693a28dd40f": {
+        "description": "India - Hindi",
+        "asset_version": "india, India"
+    },
+    "d8873ed0-de3a-da5d-9e10-a4cdced24b1b": {
+        "description": "India - Kannada",
+        "asset_version": "india, India%20english"
+    },
+    "00bfd564-7d6f-59b6-b00d-df89bddfaabe": {
+        "description": "India - Marathi",
+        "asset_version": "india, India%20-%20Marathi"
+    },
+    "d7fee124-6f53-1672-57c7-1b29038bfa35": {
+        "description": "India - Odia",
+        "asset_version": "india, India%20-%20Oriya"
+    },
+    "6d8fa9f3-88cd-348a-01be-0851a662bd6d": {
+        "description": "India - Telugu",
+        "asset_version": "india, India%20-%20Telugu"
+    },
+    "b1df240d-17a7-a114-6e95-50bcde2b81df": {
+        "description": "India - Assamese",
+        "asset_version": "india, India%20-%20Assamese"
+    },
+    "57153e33-dd43-63d8-337b-ce55028fddb6": {
+        "description": "Kyrgyzstan - Kyrgyz",
+        "asset_version": "central_asia, kyrgyz%20-%20kyrgy"
+    },
+    "31ac7e6e-0a21-6d65-7c65-528baae911ca": {
+        "description": "Kyrgyzstan - Russian",
+        "asset_version": "central_asia, kyrgyz%20-%20russian"
+    },
+    "3163c8ae-e97e-2ad3-986d-82868e1b342b": {
+        "description": "Laos",
+        "asset_version": "asia, laos"
+    },
+    "7a3f367b-99df-9bca-0b1f-100dcc14ae95": {
+        "description": "Myanmar",
+        "asset_version": "asia, myanmar"
+    },
+    "c2858af7-5618-5695-5d00-3fb1e5df7a35": {
+        "description": "Nepal - English",
+        "asset_version": "india, Nepal%20–%20English"
+    },
+    "48a750e1-e772-975f-3632-1854b5b4501b": {
+        "description": "Nepal - Nepali",
+        "asset_version": "india, Nepal%20–%20Nepali"
+    },
+    "2 7e7c925-c74b-9e3c-39c5-4d5bf5de63f2": {
+        "description": "Papua New Guinea - English",
+        "asset_version": "pacific, Papua%20New%20Guinea"
+    },
+    "b9d76a25-dbf4-4e26-e4e5-2957ba00eef7": {
+        "description": "Portuguese",
+        "asset_version": "africa, Portugese"
+    },
+    "170e377f-709c-499d-b93c-e31bb7cb3908": {
+        "description": "Rwanda - More Happy Birthdays - English",
+        "asset_version": "africa, rwanda%20-%20english"
+    },
+    "bba50fa5-52ca-8773-6f0f-257c96ade5be": {
+        "description": "Rwanda - More Happy Birthdays - French",
+        "asset_version": "africa, rwanda%20-%20french"
+    },
+    "32c2c9f8-5afe-6746-2a79-9966e7987446": {
+        "description": "Somalia",
+        "asset_version": "africa, ethiopia%20somali"
+    },
+    "dca15fb5-81b8-eeaa-c971-d08a7e5c7570": {
+        "description": "South Africa",
+        "asset_version": "africa, south%20africa"
+    },
+    "9d3b9b64-a68a-e704-7243-61a41f3972ff": {
+        "description": "Spanish",
+        "asset_version": "latin_america, latin%20america"
+    },
+    "52510488-1303-5e36-6616-cc66413a73f1": {
+        "description": "Tanzania - English",
+        "asset_version": "africa, tanzania"
+    },
+    "9f9139fa-8d00-28b8-13b9-34ce26df08cd": {
+        "description": "Tanzania - Swahili",
+        "asset_version": "africa, tanzania%20swahili"
+    },
+    "f2546fdb-9ef6-62e0-3ade-ed94cd3f1156": {
+        "description": "Ukraine",
+        "asset_version": "eastern_europe, eastern%20europe"
+    }
+}
+ 
+ 

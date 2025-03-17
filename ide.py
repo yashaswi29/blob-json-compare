@@ -1,78 +1,132 @@
 import os
 import json
+from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-JSON_FILE_PATH = os.getenv('JSON_FILE_PATH', 'path/to/your/json_file.json')
+output_dir = os.getenv("OUTPUT_DIR", "draft5")
+os.makedirs(output_dir, exist_ok=True)
+container_name = os.getenv("BLOB_CONTAINER_ASSETS")
 
-def load_json_file(json_file_path):
-    """Load JSON data from a file with line numbers."""
-    try:
-        with open(json_file_path, 'r') as file:
-            data = file.readlines()
-            json_data = json.loads(''.join(data))
-            return json_data, data
-    except FileNotFoundError:
-        print("JSON file not found.")
-        return {}, []
-    except json.JSONDecodeError:
-        print("Error decoding JSON.")
-        return {}, []
-
-def find_line_number(json_lines, search_str):
-    """Find the line number of the given string in the JSON file."""
-    for index, line in enumerate(json_lines, start=1):
-        if search_str in line:
-            return index
-    return None
-
-def check_icon_paths(json_data, json_lines, parent_key):
-    """Recursively check the 'icon' paths and return line numbers with errors."""
-    errors = []
+def save_paths_to_file(directory, file_name, paths):
+    os.makedirs(directory, exist_ok=True)  
+    full_path = os.path.join(directory, file_name)
+    with open(full_path, 'w') as file:
+        for path in paths:
+            file.write(f"{path}\n")
     
-    if isinstance(json_data, dict):
+    print(f"Paths saved to: {full_path}")
+
+def normalize_path(path):
+    """Normalizes paths to lowercase and replaces backslashes with forward slashes."""
+    return path.replace("\\", "/").lower().strip()
+
+def retrieve_image_files_from_blob_storage(container_name, image_prefix):
+    """Find all .png file paths from Azure Blob Storage."""
+    connection_string = os.getenv("AZURE_CONNECTION_STRING")
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+
+    blob_paths = []
+    
+    # Retrieve image files
+    image_blobs = container_client.list_blobs(name_starts_with=image_prefix)
+    for blob in image_blobs:
+        if blob.name.endswith('.png'):
+            blob_path = normalize_path(f"/{blob.name}" if not blob.name.startswith('/') else blob.name)
+            blob_paths.append(blob_path)
+    
+    return blob_paths
+
+def retrieve_video_files_from_blob_storage(container_name, video_prefix):
+    """Find all video file paths from Azure Blob Storage."""
+    connection_string = os.getenv("AZURE_CONNECTION_STRING")
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+
+    blob_paths = []
+    
+    # Retrieve video files (consider supported video extensions here)
+    video_blobs = container_client.list_blobs(name_starts_with=video_prefix)
+    for blob in video_blobs:
+        # Check for video extensions (e.g., .mp4, .mkv)
+        if blob.name.endswith(('.mp4', '.mkv', '.avi', ...)):  # Add relevant extensions
+            blob_path = normalize_path(f"/{blob.name}" if not blob.name.startswith('/') else blob.name)
+            blob_paths.append(blob_path)
+    
+    return blob_paths
+
+def retrieve_json_file_from_blob(container_client, blob_name):
+    """Fetches a JSON file from a specific path in the Azure Blob Storage container."""
+    blob_client = container_client.get_blob_client(blob_name)
+    json_content = blob_client.download_blob().readall()
+    return json.loads(json_content)
+
+def extract_src_values(json_data):
+    """Extract 'src' values from JSON data using recursion."""
+    src_values = []
+    if isinstance(json_data, list):
+        for item in json_data:
+            src_values.extend(extract_src_values(item))
+    elif isinstance(json_data, dict):
         for key, value in json_data.items():
-            if key == 'icon' and isinstance(value, str):
-                if not value.startswith('/'):  # Assuming valid paths must start with '/'
-                    line_number = find_line_number(json_lines, f'"{key}": "{value}"')
-                    errors.append((line_number, parent_key, value))
-            elif isinstance(value, (dict, list)):
-                errors.extend(check_icon_paths(value, json_lines, parent_key))
-    elif isinstance(json_data, list):
-        for idx, item in enumerate(json_data):
-            errors.extend(check_icon_paths(item, json_lines, f"{parent_key}[{idx}]"))
+            if key == 'src' and isinstance(value, str):
+                src_values.append(normalize_path(value.strip()))
+            else:
+                src_values.extend(extract_src_values(value))
+    return src_values
 
-    return errors
+def analyze_language(language_id, language_info, container_client):
+    # Retrieve content-bundle.json for the language
+    json_blob_path = f"{language_id}/content-bundle.json"
+    json_data = retrieve_json_file_from_blob(container_client, json_blob_path)
+    json_src_values = extract_src_values(json_data)
 
-def validate_json_icons(json_data, json_lines):
-    """Validate the 'icon' paths for specific objects."""
-    fields_to_check = ['procedures', 'actioncards', 'modules', 'drugs', 'onboarding', 
-                       'keylearningpoints', 'certificates']
-    
-    errors = []
-    
-    for field in fields_to_check:
-        if field in json_data:
-            errors.extend(check_icon_paths(json_data[field], json_lines, field))
+    # Retrieve image and video paths from the asset version
+    image_paths = retrieve_image_files_from_blob_storage(container_name, language_info["asset_version"][0])
+    video_paths = retrieve_video_files_from_blob_storage(container_name, language_info["asset_version"][1])
 
-    return errors
+    # Compare JSON paths with asset paths
+    common_paths = set(json_src_values).intersection(set(image_paths + video_paths))
+    missing_paths = set(json_src_values).difference(set(image_paths + video_paths))
+    extra_paths = set(image_paths + video_paths).difference(set(json_src_values))
+
+    # Save comparison results for the language
+    save_paths_to_file(output_dir, f"{language_id}_common_paths.txt", common_paths)
+    save_paths_to_file(output_dir, f"{language_id}_missing_paths.txt", missing_paths)
+    save_paths_to_file(output_dir, f"{language_id}_extra_paths.txt", extra_paths)
+
+    # Add JSON paths to the global set of used paths
+    global_used_paths.update(json_src_values)
 
 def main():
-    # Load the JSON file
-    json_data, json_lines = load_json_file(JSON_FILE_PATH)
-    
-    # Validate the JSON data for icon path errors
-    errors = validate_json_icons(json_data, json_lines)
-    
-    if errors:
-        print(f"Found {len(errors)} icon path errors:")
-        for error in errors:
-            line_number, field, icon_value = error
-            print(f"Line {line_number}: Error in '{field}' -> Invalid icon path: {icon_value}")
-    else:
-        print("No errors found in icon paths.")
+    # Load language mapping
+    with open("language_mapping.json", "r") as f:
+        language_mapping = json.load(f)
+
+    global_used_paths = set()
+
+    # Connect to Azure Blob Storage
+    connection_string = os.getenv("AZURE_CONNECTION_STRING")
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+
+    # Iterate over languages
+    for language_id, language_info in language_mapping.items():
+        analyze_language(language_id, language_info, container_client)
+
+    # Identify globally unused files
+    globally_unused_files = []
+    for image_path in image_paths:
+        if image_path not in global_used_paths:
+            globally_unused_files.append(image_path)
+    for video_path in video_paths:
+        if video_path not in global_used_paths:
+            globally_unused_files.append(video_path)
+
+    # Save globally unused files to a file
+    save_paths_to_file(output_dir, "globally_unused.txt", globally_unused_files)
 
 if __name__ == "__main__":
     main()
